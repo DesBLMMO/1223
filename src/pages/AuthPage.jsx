@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
-import { User, Lock, Chrome, Facebook, Twitter, Loader } from 'lucide-react';
+import { User, Lock, Chrome, Facebook, Twitter, Loader, Mail, ShieldCheck } from 'lucide-react';
 import { apiFetch } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+// Import các component Modal mới
+import RegisterModal from '../components/RegisterModal'; 
+import ForgotPasswordModal from '../components/ForgotPasswordModal'; 
 
 const AuthPage = () => {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('123456');
 
-  // Xử lý đăng nhập thường (Username/Password)
+
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+
+  
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
     try {
+      
       const data = await apiFetch('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ username, password })
@@ -31,21 +39,38 @@ const AuthPage = () => {
     }
   };
 
-  // Xử lý đăng nhập Mạng xã hội (Placeholder)
-  const handleSocialLogin = async (provider) => {
-    setIsLoading(true);
-    setError(null);
+ 
+  const handleSocialLogin = (provider) => {
+    alert(`Tính năng đăng nhập bằng ${provider} cần tích hợp Client ID thực tế.`);
+  };
 
+
+  const handleRegister = async (formData) => {
     try {
-      // Tạm thời hiển thị thông báo giả lập
-      setTimeout(() => {
-        alert(`Tính năng đăng nhập bằng ${provider} cần tích hợp Client ID thực tế.\n\nBackend đã sẵn sàng tại endpoint /api/auth/oauth.`);
-        setIsLoading(false);
-      }, 1000);
-
+ 
+      await apiFetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      });
+      alert('Đăng ký thành công! Vui lòng đăng nhập.');
+      setIsRegisterOpen(false);
     } catch (err) {
-      setError(`Lỗi đăng nhập ${provider}`);
-      setIsLoading(false);
+      alert(`Lỗi đăng ký: ${err.message}`);
+    }
+  };
+
+ 
+  const handleForgotPassword = async (email) => {
+    try {
+    
+      await apiFetch('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+      alert('Yêu cầu đã được gửi. Vui lòng kiểm tra email của bạn để đặt lại mật khẩu.');
+      setIsForgotOpen(false);
+    } catch (err) {
+      alert(`Lỗi: ${err.message}. (Backend sẽ trả về thông báo chung để đảm bảo an toàn)`);
     }
   };
 
@@ -53,9 +78,13 @@ const AuthPage = () => {
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-pink-300 via-purple-300 to-blue-400 flex items-center justify-center p-4">
+      
+      {/* Modals: Đăng ký và Quên mật khẩu */}
+      {isRegisterOpen && <RegisterModal onClose={() => setIsRegisterOpen(false)} onRegister={handleRegister} />}
+      {isForgotOpen && <ForgotPasswordModal onClose={() => setIsForgotOpen(false)} onSend={handleForgotPassword} />}
+
       <div className="bg-white w-full max-w-4xl h-[600px] rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative">
         
-        {/* Loading Overlay */}
         {isLoading && (
           <div className="absolute inset-0 bg-white/80 z-50 flex items-center justify-center backdrop-blur-sm">
             <Loader className="animate-spin h-10 w-10 text-blue-600" />
@@ -72,44 +101,37 @@ const AuthPage = () => {
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="relative group">
               <User className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-              <input 
-                type="text" 
-                placeholder="Username" 
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
-                className="w-full pl-10 pr-4 py-3 border-b-2 border-gray-200 focus:border-blue-500 outline-none bg-transparent text-gray-700 placeholder-gray-400 transition-all" 
-                required 
-              />
+              <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="w-full pl-10 pr-4 py-3 border-b-2 border-gray-200 focus:border-blue-500 outline-none bg-transparent" required />
             </div>
             
             <div className="relative group">
               <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-              <input 
-                type="password" 
-                placeholder="Password" 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                className="w-full pl-10 pr-4 py-3 border-b-2 border-gray-200 focus:border-blue-500 outline-none bg-transparent text-gray-700 placeholder-gray-400 transition-all" 
-                required 
-              />
+              <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="w-full pl-10 pr-4 py-3 border-b-2 border-gray-200 focus:border-blue-500 outline-none bg-transparent" required />
             </div>
 
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-full shadow-lg hover:shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold py-3 rounded-full shadow-lg hover:shadow-blue-500/30 transition-all"
             >
               LOGIN
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-gray-400">
-             (Demo: Ensure Backend is running on port 4000)
+          {/* Nút Quên mật khẩu */}
+          <div className="mt-6 text-center">
+            <button 
+              type="button" 
+              onClick={() => setIsForgotOpen(true)} // Mở ForgotPasswordModal
+              className="text-sm text-gray-400 hover:text-blue-500 transition-colors"
+            >
+              Forgot Password?
+            </button>
           </div>
         </div>
 
         {/* Right Side: Decorative / Social Login */}
-        <div className="w-full md:w-1/2 relative flex flex-col justify-center items-center text-white p-8 md:p-12 overflow-hidden bg-gray-900">
+        <div className="w-full md:w-1/2 relative flex flex-col justify-center items-center text-white p-8 md:p-12 overflow-hidden">
           <div className="absolute inset-0 bg-cover bg-center z-0 transition-transform duration-700 hover:scale-110" style={{ backgroundImage: `url(${UNSPLASH_IMAGE})` }}></div>
           <div className="absolute inset-0 bg-blue-900/40 mix-blend-multiply z-10"></div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
@@ -119,34 +141,21 @@ const AuthPage = () => {
             <p className="text-blue-100 mb-8 text-sm">Using your social media account</p>
 
             <div className="flex justify-center space-x-4 mb-8">
-               <button 
-                 type="button"
-                 onClick={() => handleSocialLogin('Google')}
-                 className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white hover:text-red-500 transition-all border border-white/30 group"
-               >
-                 <Chrome size={20} className="group-hover:scale-110 transition-transform"/>
-               </button>
-               <button 
-                 type="button"
-                 onClick={() => handleSocialLogin('Facebook')}
-                 className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white hover:text-blue-600 transition-all border border-white/30 group"
-               >
-                 <Facebook size={20} className="group-hover:scale-110 transition-transform"/>
-               </button>
-               <button 
-                 type="button"
-                 onClick={() => handleSocialLogin('Twitter')}
-                 className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white hover:text-sky-400 transition-all border border-white/30 group"
-               >
-                 <Twitter size={20} className="group-hover:scale-110 transition-transform"/>
-               </button>
+               <button type="button" onClick={() => handleSocialLogin('Google')} className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white hover:text-red-500 transition-all border border-white/30 group"><Chrome size={20} className="group-hover:scale-110 transition-transform" /></button>
+               <button type="button" onClick={() => handleSocialLogin('Facebook')} className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white hover:text-blue-600 transition-all border border-white/30 group"><Facebook size={20} className="group-hover:scale-110 transition-transform" /></button>
+               <button type="button" onClick={() => handleSocialLogin('Twitter')} className="p-3 bg-white/20 backdrop-blur-md rounded-full hover:bg-white hover:text-sky-400 transition-all border border-white/30 group"><Twitter size={20} className="group-hover:scale-110 transition-transform" /></button>
             </div>
 
-            {}
+            <div className="flex items-center justify-center space-x-2 mb-8 text-sm text-blue-100">
+               <input type="checkbox" id="terms" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer" />
+               <label htmlFor="terms" className="cursor-pointer select-none">By signing up I agree with terms</label>
+            </div>
+
+            {/* Nút Đăng ký (mở Modal) */}
             <button 
-              type="button"
-              className="inline-block border-b border-white pb-1 hover:text-blue-200 hover:border-blue-200 transition-colors text-sm bg-transparent"
-              onClick={() => alert("Chức năng tạo tài khoản đang phát triển.")}
+              type="button" 
+              onClick={() => setIsRegisterOpen(true)} // Mở RegisterModal
+              className="inline-block border-b border-white pb-1 hover:text-blue-200 hover:border-blue-200 transition-colors"
             >
               Create account
             </button>
