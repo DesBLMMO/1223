@@ -49,11 +49,11 @@ const OrderManagement = () => {
               <thead className="bg-[#fafafa] border-b border-gray-200">
                  <tr>
                    <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Order ID</th>
-                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Customer</th>
-                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Products</th>
-                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Payment</th>
-                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Status</th>
-                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Total</th>
+                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Khách Hàng</th>
+                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Sản Phẩm</th>
+                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Giá Tiền</th>
+                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Trạng Thái</th>
+                   <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase">Tổng</th>
                    <th className="px-6 py-3 text-right">Actions</th>
                  </tr>
               </thead>
